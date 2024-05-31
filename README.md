@@ -60,10 +60,10 @@ grant execute on aggregate_database.* to test_user;
 ## Return Types 
 
 The sas_m_three_m_four_udaf aggregate returns JSON structured like 
-``` JSON 
-{m3: double, m4: double}
+``` json 
+{"m3":8.725500198069909e15,"m4":1.0145348454666839e21} 
 ``` 
-where m3 is the third statistical moment and m4 is the fourth statistical moment. Singlestore has helpful documentation about parsing JSON [here](https://docs.singlestore.com/cloud/reference/sql-reference/json-functions/json-extract-type/). 
+where m3 is the third statistical moment and m4 is the fourth statistical moment and their values are doubles. Singlestore has helpful documentation about parsing JSON [here](https://docs.singlestore.com/cloud/reference/sql-reference/json-functions/json-extract-type/). 
 
 ## Examples
 Aggregates can be executed with their fully qualified name or their partially qualified name. 
