@@ -1,6 +1,9 @@
-/*----------------------------------------------------------------------------------------------
-* Declaration of helper functions and aggregate that calculates and returns moments 3 and 4 in JSON
-*----------------------------------------------------------------------------------------------*/
+-- ================================================================================================================
+-- Copyright © 2024, SAS Institute Inc., Cary, NC, USA.  All Rights Reserved.
+-- SPDX-License-Identifier: Apache-2.0
+--
+-- Description: Declaration of helper functions and aggregate that calculates third and fourth stastitical moments
+-- ================================================================================================================
 
 delimiter //
 create or replace function sas_m_three_m_four_init()
