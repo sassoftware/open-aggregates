@@ -20,7 +20,7 @@ A SingleStore database instance is required to create and utilize the UDAFs.
     * See SingleStore documentation on the [GRANT statement](https://docs.singlestore.com/db/v8.5/reference/sql-reference/security-management-commands/grant/) and [Role-Based Access Control](https://docs.singlestore.com/db/v8.5/security/administration/role-based-access-control-rbac-at-database-level/).
     * Also consult the [Database Privileges](#database-privileges) section below.
 1. Execute the SQL statements in [src/udafs.sql](src/udafs.sql). There are many ways to execute these statements and you can choose whichever method works best for you. Here are two options:
-    * Issue a `SOURCE` statement to execute a local copy of [src/udafs.sql](src/udafs.sql).
+    * Issue a `SOURCE` statement from the database client application to execute a local copy of [src/udafs.sql](src/udafs.sql).
         ``` sql
         source udafs.sql;
         ```
@@ -29,7 +29,7 @@ A SingleStore database instance is required to create and utilize the UDAFs.
     * The validation statements are:
         ``` sql
         show aggregates;
-        select sas_m_three_udaf(1), sas_udafs(1) from dual;
+        select sas_m_three_udaf(1), sas_m_three_m_four_udaf(1) from dual;
         ```
     * Output from the validation statements should look like this:
         ``` sql
