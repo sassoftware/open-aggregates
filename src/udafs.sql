@@ -8,7 +8,7 @@
 -- Declaration for aggregate that calculates m3 and accompanying helper functions
 delimiter //
 create or replace function sas_m_three_init()
-returns record(s double, c double, m1 double, m2 double, m3 double, center double, final smallint) as
+returns record(s double, c bigint, m1 double, m2 double, m3 double, center double, final smallint) as
 declare
   COPYRIGHT VARCHAR(255) = "Copyright 2024, SAS Institute Inc., Cary, NC, USA.";
 begin
@@ -18,10 +18,10 @@ delimiter ;
 
 delimiter //
 create or replace function sas_m_three_iter (
-  r record(s double, c double, m1 double, m2 double, m3 double, center double, final smallint),
+  r record(s double, c bigint, m1 double, m2 double, m3 double, center double, final smallint),
   value double
 )
-returns record(s double, c double, m1 double, m2 double, m3 double, center double, final smallint) as
+returns record(s double, c bigint, m1 double, m2 double, m3 double, center double, final smallint) as
 declare
   COPYRIGHT VARCHAR(255) = "Copyright 2024, SAS Institute Inc., Cary, NC, USA.";
   distance double;
@@ -47,10 +47,10 @@ delimiter ;
 
 delimiter //
 create or replace function sas_m_three_merge (
-  state1 record(s double, c double, m1 double, m2 double, m3 double, center double, final smallint),
-  state2 record(s double, c double, m1 double, m2 double, m3 double, center double, final smallint)
+  state1 record(s double, c bigint, m1 double, m2 double, m3 double, center double, final smallint),
+  state2 record(s double, c bigint, m1 double, m2 double, m3 double, center double, final smallint)
 )
-returns record(s double, c double, m1 double, m2 double, m3 double, center double, final smallint) as
+returns record(s double, c bigint, m1 double, m2 double, m3 double, center double, final smallint) as
 declare
   COPYRIGHT VARCHAR(255) = "Copyright 2024, SAS Institute Inc., Cary, NC, USA.";
   new_mean double;
@@ -61,10 +61,10 @@ declare
   new_dst_m1 double;  
   new_dst_m2 double;
   new_dst_m3 double;
-  state1_copy record(s double, c double, m1 double, m2 double, m3 double, center double, final smallint) = state1;
-  state2_copy record(s double, c double, m1 double, m2 double, m3 double, center double, final smallint) = state2;
+  state1_copy record(s double, c bigint, m1 double, m2 double, m3 double, center double, final smallint) = state1;
+  state2_copy record(s double, c bigint, m1 double, m2 double, m3 double, center double, final smallint) = state2;
 begin
-  -- Finalize state1
+  -- Finalize state1 
   if state1_copy.final = 0 and state1_copy.c > 1 then
     new_mean = state1_copy.s / state1_copy.c;
     diff = state1_copy.center - new_mean;
@@ -113,18 +113,27 @@ delimiter ;
 
 delimiter //
 create or replace function sas_m_three_term (
-  r record(s double, c double, m1 double, m2 double, m3 double, center double, final smallint)
+  r record(s double, c bigint, m1 double, m2 double, m3 double, center double, final smallint)
 )
 returns  DOUBLE as
 declare
   COPYRIGHT VARCHAR(255) = "Copyright 2024, SAS Institute Inc., Cary, NC, USA.";
+  new_mean double;
+  diff double;
+  m3 double = r.m3;
 begin
-  return r.m3;
+  -- Finalize state -- Note that if r.c == 1, m3 == r.m3 because diff == 0
+  if r.final = 0 and r.c > 1 then
+    new_mean = r.s / r.c;
+    diff = r.center - new_mean;
+    m3 = m3 + diff * (3.0 * r.m2 + diff * ((3.0 * r.m1) + (diff * r.c)));
+  end if;
+  return m3;
 end //
 delimiter ;
 
 create or replace aggregate sas_m_three_udaf(double) returns DOUBLE
-  with state record(s double, c double, m1 double, m2 double, m3 double, center double, final smallint)
+  with state record(s double, c bigint, m1 double, m2 double, m3 double, center double, final smallint)
   initialize with sas_m_three_init
   iterate with sas_m_three_iter
   merge with sas_m_three_merge
@@ -254,8 +263,19 @@ create or replace function sas_m_three_m_four_term (
 returns JSON as
 declare
   COPYRIGHT VARCHAR(255) = "Copyright 2024, SAS Institute Inc., Cary, NC, USA.";
+  new_mean double;
+  diff double;
+  m4 double = r.m4;
+  m3 double = r.m3;
 begin
-  return TO_JSON(ROW(r.m3, r.m4):>RECORD(m3 double, m4 double)) AS RowOutput;
+  -- Finalize state1
+  if r.final = 0 and r.c > 1 then
+    new_mean = r.s / r.c;
+    diff = r.center - new_mean;
+    m4 = m4 + diff * (4.0 * m3 + diff * (6.0 * r.m2 + diff * (4.0 * r.m1 + diff * r.c)));
+    m3 = m3 + diff * (3.0 * r.m2 + diff * (3.0 * r.m1 + diff * r.c));
+  end if;
+  return TO_JSON(ROW(m3, m4):>RECORD(m3 double, m4 double)) AS RowOutput;
 end //
 delimiter ;
 
