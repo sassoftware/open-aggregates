@@ -268,7 +268,7 @@ declare
   m4 double = r.m4;
   m3 double = r.m3;
 begin
-  -- Finalize state1
+   -- Finalize state -- Note that if r.c == 1, m3 == r.m3 because diff == 0
   if r.final = 0 and r.c > 1 then
     new_mean = r.s / r.c;
     diff = r.center - new_mean;
